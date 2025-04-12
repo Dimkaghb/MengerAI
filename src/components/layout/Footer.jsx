@@ -12,49 +12,54 @@ const Footer = () => {
               Menger
             </Link>
             <p className="mt-4 text-gray-600">
-              Empowering learners through AI-driven education
+              Расширение возможностей учащихся через образование с помощью ИИ
             </p>
           </div>
           
           <div>
-            <h3 className="text-gray-900 font-semibold mb-4">Product</h3>
+            <h3 className="text-gray-900 font-semibold mb-4">Продукт</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/features" className="text-gray-600 hover:text-primary">
-                  Features
+                  Функции
+                </Link>
+              </li>
+              <li>
+                <Link to="/competition" className="text-gray-600 hover:text-primary">
+                  Соревнования
                 </Link>
               </li>
               <li>
                 <Link to="/how-it-works" className="text-gray-600 hover:text-primary">
-                  How it Works
+                  Как это работает
                 </Link>
               </li>
               <li>
                 <Link to="/signup" className="text-gray-600 hover:text-primary">
-                  Get Started
+                  Начать
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-gray-900 font-semibold mb-4">Legal</h3>
+            <h3 className="text-gray-900 font-semibold mb-4">Правовая информация</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/privacy" className="text-gray-600 hover:text-primary">
-                  Privacy Policy
+                  Политика конфиденциальности
                 </Link>
               </li>
               <li>
                 <Link to="/terms" className="text-gray-600 hover:text-primary">
-                  Terms of Service
+                  Условия использования
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-gray-900 font-semibold mb-4">Social</h3>
+            <h3 className="text-gray-900 font-semibold mb-4">Социальные сети</h3>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-primary">
                 <FaTwitter className="h-6 w-6" />

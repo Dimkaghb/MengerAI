@@ -12,6 +12,8 @@ import Course from './pages/Course';
 import JoinTeam from './pages/JoinTeam';
 import Competition from './pages/Competition';
 import TeacherDashboard from './pages/TeacherDashboard';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -25,8 +27,12 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/course/:id" element={<Course />} />
           <Route path="/join-team" element={<JoinTeam />} />
+          <Route path="/competition" element={<Competition />} />
+          <Route path="/competition/:competitionId" element={<Competition />} />
           <Route path="/compete" element={<Competition />} />
           <Route path="/teacher" element={<TeacherDashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>
     </Router>

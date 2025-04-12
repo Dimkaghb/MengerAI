@@ -16,9 +16,10 @@ const Navbar = () => {
           </div>
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-8">
-            <Link to="/features" className="text-gray-700 hover:text-primary">Features</Link>
-            <Link to="/how-it-works" className="text-gray-700 hover:text-primary">How it Works</Link>
-            <Link to="/signup" className="btn-primary">Get Started</Link>
+            <Link to="/features" className="text-gray-700 hover:text-primary">Функции</Link>
+            <Link to="/competition" className="text-gray-700 hover:text-primary">Соревнования</Link>
+            <Link to="/how-it-works" className="text-gray-700 hover:text-primary">Как это работает</Link>
+            <Link to="/signup" className="btn-primary">Начать</Link>
           </div>
 
           <div className="sm:hidden">
@@ -42,7 +43,19 @@ const Navbar = () => {
                               active ? 'bg-gray-100' : ''
                             } block px-4 py-2 text-sm text-gray-700`}
                           >
-                            Features
+                            Функции
+                          </Link>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            to="/competition"
+                            className={`${
+                              active ? 'bg-gray-100' : ''
+                            } block px-4 py-2 text-sm text-gray-700`}
+                          >
+                            Соревнования
                           </Link>
                         )}
                       </Menu.Item>
@@ -54,7 +67,7 @@ const Navbar = () => {
                               active ? 'bg-gray-100' : ''
                             } block px-4 py-2 text-sm text-gray-700`}
                           >
-                            How it Works
+                            Как это работает
                           </Link>
                         )}
                       </Menu.Item>
@@ -66,7 +79,7 @@ const Navbar = () => {
                               active ? 'bg-gray-100' : ''
                             } block px-4 py-2 text-sm text-gray-700`}
                           >
-                            Get Started
+                            Начать
                           </Link>
                         )}
                       </Menu.Item>

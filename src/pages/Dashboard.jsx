@@ -9,28 +9,30 @@ import {
   Cog6ToothIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
+  Bars3Icon,
 } from '@heroicons/react/24/outline';
+import mengerLogo from '../assets/menger3.png';
 
 // Mock data for courses
 const mockCourses = [
   {
     id: 1,
     title: 'Algebra Basics',
-    video: 'https://www.youtube.com/embed/5E3rT4zKP4E',
+    video: 'https://www.youtube.com/embed/vDqOoI-4Z6M',
     tags: ['Math', 'Beginner'],
     xp: 100,
   },
   {
     id: 2,
     title: 'Physics Fundamentals',
-    video: 'https://www.youtube.com/embed/7R0mJ1Hhx0c',
+    video: 'https://www.youtube.com/embed/jLJLXka2wEM',
     tags: ['Physics', 'Intermediate'],
     xp: 150,
   },
   {
     id: 3,
     title: 'Chemistry 101',
-    video: 'https://www.youtube.com/embed/LQ1TZe0nXyU',
+    video: 'https://www.youtube.com/embed/ofLuq4Tyeus',
     tags: ['Chemistry', 'Beginner'],
     xp: 120,
   },
@@ -41,6 +43,7 @@ const tags = ['All', 'Math', 'Physics', 'Chemistry', 'Biology', 'History'];
 const Dashboard = () => {
   const [selectedTag, setSelectedTag] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const filteredCourses = mockCourses.filter(course => {
     const matchesTag = selectedTag === 'All' || course.tags.includes(selectedTag);
@@ -48,14 +51,81 @@ const Dashboard = () => {
     return matchesTag && matchesSearch;
   });
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-white h-screen fixed left-0 top-0 shadow-lg">
-          <div className="p-6">
-            <Link to="/" className="text-2xl font-sora font-bold text-lavender">
-              Menger
+      <div className="flex flex-col md:flex-row">
+        {/* Mobile Header */}
+        <div className="md:hidden bg-white p-4 flex items-center justify-between shadow-sm">
+          <Link to="/" className="flex items-center">
+            <img src={mengerLogo} alt="Menger Logo" className="h-10" />
+          </Link>
+          <button 
+            onClick={toggleMobileMenu}
+            className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+          >
+            <Bars3Icon className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-white shadow-sm">
+            <nav className="py-2">
+              <div className="px-4 space-y-1">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center px-4 py-2 text-gray-700 bg-lavender bg-opacity-10 rounded-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <BookOpenIcon className="h-5 w-5 mr-3" />
+                  My Courses
+                </Link>
+                <Link
+                  to="/join-team"
+                  className="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <UserGroupIcon className="h-5 w-5 mr-3" />
+                  Join Team
+                </Link>
+                <Link
+                  to="/competition"
+                  className="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <TrophyIcon className="h-5 w-5 mr-3" />
+                  Competitions
+                </Link>
+                <Link
+                  to="/profile"
+                  className="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <UserIcon className="h-5 w-5 mr-3" />
+                  Profile
+                </Link>
+                <Link
+                  to="/settings"
+                  className="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Cog6ToothIcon className="h-5 w-5 mr-3" />
+                  Settings
+                </Link>
+              </div>
+            </nav>
+          </div>
+        )}
+
+        {/* Sidebar - hidden on mobile */}
+        <div className="w-64 bg-white h-screen fixed left-0 top-0 shadow-sm">
+          <div className="p-2">
+            <Link to="/" className="flex items-center">
+              <img src={mengerLogo} alt="Menger Logo" className="h-14" />
             </Link>
           </div>
           <nav className="mt-6">
@@ -100,15 +170,15 @@ const Dashboard = () => {
         </div>
 
         {/* Main Content */}
-        <div className="ml-64 flex-1 p-8">
+        <div className="w-full md:ml-64 p-4 md:p-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">My Courses</h1>
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Courses</h1>
             <p className="text-gray-600 mt-2">Continue your learning journey</p>
           </div>
 
           {/* Progress Bar */}
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-4 md:p-6 mb-6 md:mb-8">
             <div className="flex justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">Level 1</span>
               <span className="text-sm font-medium text-gray-700">250/1000 XP</span>
@@ -122,7 +192,7 @@ const Dashboard = () => {
           </div>
 
           {/* Search and Filter */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6 md:mb-8">
             <div className="flex-1 relative">
               <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
@@ -148,14 +218,14 @@ const Dashboard = () => {
           </div>
 
           {/* Course Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredCourses.map((course, index) => (
               <motion.div
                 key={course.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="card"
+                className="card bg-white p-4 rounded-lg shadow"
               >
                 <div className="aspect-w-16 aspect-h-9 mb-4">
                   <iframe
@@ -166,26 +236,26 @@ const Dashboard = () => {
                     allowFullScreen
                   ></iframe>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
                   {course.title}
                 </h3>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {course.tags.map(tag => (
                     <span
                       key={tag}
-                      className="px-2 py-1 bg-lavender bg-opacity-10 text-lavender rounded-full text-sm"
+                      className="px-2 py-1 bg-lavender bg-opacity-10 text-lavender rounded-full text-xs md:text-sm"
                     >
                       {tag}
                     </span>
                   ))}
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-xs md:text-sm text-gray-600">
                     {course.xp} XP
                   </span>
                   <Link
                     to={`/course/${course.id}`}
-                    className="btn-primary text-sm"
+                    className="btn-primary text-xs md:text-sm bg-lavender px-3 py-1 text-white rounded-md"
                   >
                     Start Learning
                   </Link>
