@@ -11,7 +11,6 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <img src={logo} alt="Menger Logo" className="h-8 w-auto" />
             </Link>
           </div>
           
