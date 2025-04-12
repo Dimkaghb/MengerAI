@@ -8,48 +8,81 @@ import {
   Cog6ToothIcon,
   PlusCircleIcon,
   AcademicCapIcon,
+  PlusIcon,
+  XMarkIcon,
+  CalendarIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import mengerLogo from '../assets/menger3.png';
 
 const TeacherCompetition = () => {
-  const [competitions, setCompetitions] = useState([]);
-  const [isCreating, setIsCreating] = useState(false);
+  const [showNewCompetitionModal, setShowNewCompetitionModal] = useState(false);
+  const [competitions, setCompetitions] = useState([
+    {
+      id: 1,
+      name: 'Math Challenge',
+      subject: 'Mathematics',
+      date: '2024-03-20T14:00',
+      duration: 60,
+      difficulty: 'Intermediate',
+      maxParticipants: 30,
+      currentParticipants: 15,
+      description: 'Test your mathematical problem-solving skills'
+    },
+    {
+      id: 2,
+      name: 'Physics Quiz',
+      subject: 'Physics',
+      date: '2024-03-22T15:30',
+      duration: 45,
+      difficulty: 'Beginner',
+      maxParticipants: 25,
+      currentParticipants: 12,
+      description: 'Basic physics concepts and principles'
+    }
+  ]);
+
   const [newCompetition, setNewCompetition] = useState({
     name: '',
-    area: '',
-    description: '',
-    timeLimit: 30,
-    difficulty: 'Medium',
+    subject: '',
+    date: '',
+    duration: '',
+    difficulty: 'Beginner',
+    maxParticipants: '',
+    description: ''
   });
-
-  const areas = [
-    { id: 'cs', name: 'Computer Science' },
-    { id: 'physics', name: 'Physics' },
-    { id: 'chemistry', name: 'Chemistry' },
-    { id: 'math', name: 'Mathematics' },
-    { id: 'biology', name: 'Biology' },
-  ];
-
-  const difficulties = ['Easy', 'Medium', 'Hard'];
 
   const handleCreateCompetition = (e) => {
     e.preventDefault();
-    const competition = {
+    const newCompetitionEntry = {
+      id: competitions.length + 1,
       ...newCompetition,
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      participants: 0,
-      status: 'Active',
+      currentParticipants: 0
     };
-    setCompetitions([competition, ...competitions]);
-    setIsCreating(false);
+    setCompetitions([...competitions, newCompetitionEntry]);
     setNewCompetition({
       name: '',
-      area: '',
-      description: '',
-      timeLimit: 30,
-      difficulty: 'Medium',
+      subject: '',
+      date: '',
+      duration: '',
+      difficulty: 'Beginner',
+      maxParticipants: '',
+      description: ''
     });
+    setShowNewCompetitionModal(false);
+  };
+
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case 'Beginner':
+        return 'bg-green-100 text-green-800';
+      case 'Intermediate':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Advanced':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -100,124 +133,146 @@ const TeacherCompetition = () => {
                 <p className="text-gray-600 mt-2">Create and manage your competitions</p>
               </div>
               <button
-                onClick={() => setIsCreating(true)}
+                onClick={() => setShowNewCompetitionModal(true)}
                 className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                <PlusCircleIcon className="h-5 w-5 mr-2" />
+                <PlusIcon className="h-5 w-5 mr-2" />
                 Create Competition
               </button>
             </div>
 
-            {/* Create Competition Modal */}
-            {isCreating && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Create New Competition</h2>
-                    <button
-                      onClick={() => setIsCreating(false)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      ×
-                    </button>
+            {/* New Competition Modal */}
+            {showNewCompetitionModal && (
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-gray-900">Create New Competition</h3>
+                      <button
+                        onClick={() => setShowNewCompetitionModal(false)}
+                        className="text-gray-400 hover:text-gray-500"
+                      >
+                        <XMarkIcon className="h-6 w-6" />
+                      </button>
+                    </div>
                   </div>
-
-                  <form onSubmit={handleCreateCompetition}>
-                    <div className="space-y-6">
+                  <form onSubmit={handleCreateCompetition} className="px-6 py-4">
+                    <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Competition Name *
+                        <label htmlFor="competitionName" className="block text-sm font-medium text-gray-700">
+                          Competition Name
                         </label>
                         <input
                           type="text"
-                          required
+                          id="competitionName"
                           value={newCompetition.name}
                           onChange={(e) => setNewCompetition({ ...newCompetition, name: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          placeholder="Enter competition name"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Subject Area *
-                        </label>
-                        <select
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                           required
-                          value={newCompetition.area}
-                          onChange={(e) => setNewCompetition({ ...newCompetition, area: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        >
-                          <option value="">Select subject area</option>
-                          {areas.map((area) => (
-                            <option key={area.id} value={area.id}>
-                              {area.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Description
-                        </label>
-                        <textarea
-                          value={newCompetition.description}
-                          onChange={(e) => setNewCompetition({ ...newCompetition, description: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          rows="3"
-                          placeholder="Enter competition description"
                         />
                       </div>
-
+                      <div>
+                        <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
+                          Subject
+                        </label>
+                        <input
+                          type="text"
+                          id="subject"
+                          value={newCompetition.subject}
+                          onChange={(e) => setNewCompetition({ ...newCompetition, subject: e.target.value })}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                          required
+                        />
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Time Limit (seconds)
+                          <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                            Date & Time
+                          </label>
+                          <input
+                            type="datetime-local"
+                            id="date"
+                            value={newCompetition.date}
+                            onChange={(e) => setNewCompetition({ ...newCompetition, date: e.target.value })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+                            Duration (minutes)
                           </label>
                           <input
                             type="number"
-                            value={newCompetition.timeLimit}
-                            onChange={(e) => setNewCompetition({ ...newCompetition, timeLimit: parseInt(e.target.value) })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            min="10"
-                            max="300"
+                            id="duration"
+                            value={newCompetition.duration}
+                            onChange={(e) => setNewCompetition({ ...newCompetition, duration: e.target.value })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                            required
+                            min="1"
                           />
                         </div>
-
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Difficulty Level
+                          <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">
+                            Difficulty
                           </label>
                           <select
+                            id="difficulty"
                             value={newCompetition.difficulty}
                             onChange={(e) => setNewCompetition({ ...newCompetition, difficulty: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                            required
                           >
-                            {difficulties.map((difficulty) => (
-                              <option key={difficulty} value={difficulty}>
-                                {difficulty}
-                              </option>
-                            ))}
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
                           </select>
                         </div>
+                        <div>
+                          <label htmlFor="maxParticipants" className="block text-sm font-medium text-gray-700">
+                            Max Participants
+                          </label>
+                          <input
+                            type="number"
+                            id="maxParticipants"
+                            value={newCompetition.maxParticipants}
+                            onChange={(e) => setNewCompetition({ ...newCompetition, maxParticipants: e.target.value })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                            required
+                            min="1"
+                          />
+                        </div>
                       </div>
-
-                      <div className="flex justify-end space-x-4">
-                        <button
-                          type="button"
-                          onClick={() => setIsCreating(false)}
-                          className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                        >
-                          Create Competition
-                        </button>
+                      <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                          Description
+                        </label>
+                        <textarea
+                          id="description"
+                          value={newCompetition.description}
+                          onChange={(e) => setNewCompetition({ ...newCompetition, description: e.target.value })}
+                          rows={3}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                          required
+                        />
                       </div>
+                    </div>
+                    <div className="mt-6 flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowNewCompetitionModal(false)}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                      >
+                        Create Competition
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -247,19 +302,19 @@ const TeacherCompetition = () => {
                           Name
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Area
+                          Subject
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Duration
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Difficulty
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Participants
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Created
                         </th>
                       </tr>
                     </thead>
@@ -270,29 +325,25 @@ const TeacherCompetition = () => {
                             <div className="text-sm font-medium text-gray-900">{competition.name}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500">{competition.subject}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-500">
-                              {areas.find(a => a.id === competition.area)?.name}
+                              {new Date(competition.date).toLocaleString()}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              competition.difficulty === 'Easy' ? 'bg-green-100 text-green-800' :
-                              competition.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
+                            <div className="text-sm text-gray-500">
+                              {competition.duration} minutes
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDifficultyColor(competition.difficulty)}`}>
                               {competition.difficulty}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {competition.participants}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                              {competition.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(competition.createdAt).toLocaleDateString()}
+                            {competition.currentParticipants} / {competition.maxParticipants}
                           </td>
                         </tr>
                       ))}

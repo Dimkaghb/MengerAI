@@ -1,258 +1,265 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import DashboardLayout from '../components/layout/DashboardLayout';
 import {
-  TrophyIcon,
-  UserGroupIcon,
-  BookOpenIcon,
-  UserIcon,
-  Cog6ToothIcon,
-  PlusCircleIcon,
-  ChartBarIcon,
   AcademicCapIcon,
+  UserGroupIcon,
+  ChartBarIcon,
+  PlusIcon,
   XMarkIcon,
   ClockIcon,
-  AdjustmentsHorizontalIcon,
-  PlusIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
-import mengerLogo from '../assets/menger3.png';
 
 const TeacherDashboard = () => {
-  const [classes, setClasses] = useState([]);
-  const [competitions, setCompetitions] = useState([]);
-  const [isCreatingClass, setIsCreatingClass] = useState(false);
-  const [isCreatingCompetition, setIsCreatingCompetition] = useState(false);
   const [activeTab, setActiveTab] = useState('classes');
+  const [showNewClassModal, setShowNewClassModal] = useState(false);
+  const [classes, setClasses] = useState([
+    {
+      id: 1,
+      name: 'Advanced Mathematics',
+      subject: 'Mathematics',
+      students: 25,
+      progress: 75,
+      description: 'Advanced mathematical concepts and problem solving',
+      completedLessons: 15,
+      totalLessons: 20,
+      nextClass: 'Tomorrow at 2:00 PM',
+      averageScore: 85
+    },
+    {
+      id: 2,
+      name: 'Physics 101',
+      subject: 'Physics',
+      students: 20,
+      progress: 60,
+      description: 'Introduction to physics principles',
+      completedLessons: 8,
+      totalLessons: 15,
+      nextClass: 'Friday at 3:30 PM',
+      averageScore: 78
+    }
+  ]);
+
   const [newClass, setNewClass] = useState({
     name: '',
     subject: '',
     description: '',
-    competitions: [],
-    students: [],
   });
-  const [newCompetition, setNewCompetition] = useState({
-    name: '',
-    subject: '',
-    description: '',
-    timeLimit: 30,
-    difficulty: 'medium',
-    questions: [],
-    status: 'draft',
-  });
-
-  const subjects = [
-    { id: 'cs', name: 'Computer Science' },
-    { id: 'physics', name: 'Physics' },
-    { id: 'chemistry', name: 'Chemistry' },
-    { id: 'math', name: 'Mathematics' },
-    { id: 'biology', name: 'Biology' },
-  ];
-
-  const difficulties = [
-    { id: 'easy', name: 'Easy' },
-    { id: 'medium', name: 'Medium' },
-    { id: 'hard', name: 'Hard' },
-  ];
-
-  // Mock data for class performance
-  const classPerformance = [
-    { name: 'Algebra 101', performance: 75 },
-    { name: 'Physics Fundamentals', performance: 60 },
-    { name: 'Chemistry Basics', performance: 45 },
-  ];
-
-  // Mock data for student engagement
-  const studentEngagement = [
-    { name: 'Sarah Chen', engagement: 90 },
-    { name: 'Michael Rodriguez', engagement: 85 },
-    { name: 'Emma Wilson', engagement: 95 },
-  ];
 
   const handleCreateClass = (e) => {
     e.preventDefault();
-    const newClassData = {
+    const newClassEntry = {
+      id: classes.length + 1,
       ...newClass,
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      studentCount: 0,
-      status: 'Active',
+      students: 0,
+      progress: 0,
+      completedLessons: 0,
+      totalLessons: 10,
+      nextClass: 'Not scheduled',
+      averageScore: 0
     };
-    setClasses([newClassData, ...classes]);
-    setIsCreatingClass(false);
-    setNewClass({
-      name: '',
-      subject: '',
-      description: '',
-      competitions: [],
-      students: [],
-    });
-  };
-
-  const handleCreateCompetition = (e) => {
-    e.preventDefault();
-    const newCompetitionData = {
-      ...newCompetition,
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      participantCount: 0,
-    };
-    setCompetitions([newCompetitionData, ...competitions]);
-    setIsCreatingCompetition(false);
-    setNewCompetition({
-      name: '',
-      subject: '',
-      description: '',
-      timeLimit: 30,
-      difficulty: 'medium',
-      questions: [],
-      status: 'draft',
-    });
+    setClasses([...classes, newClassEntry]);
+    setNewClass({ name: '', subject: '', description: '' });
+    setShowNewClassModal(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Main Layout */}
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-white fixed left-0 top-16 bottom-0 border-r border-gray-200 overflow-y-auto">
-          <div className="flex flex-col h-full">
-            {/* Profile Section */}
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <UserIcon className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Teacher Name</h2>
-                  <p className="text-sm text-gray-600">Mathematics</p>
-                </div>
-              </div>
+    <DashboardLayout>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 p-3 rounded-lg bg-primary/10">
+              <AcademicCapIcon className="h-6 w-6 text-primary" />
             </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-2">
-              <Link to="/teacher/courses" className="flex items-center px-4 py-3 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors duration-200">
-                <BookOpenIcon className="h-5 w-5 mr-3" />
-                My Courses
-              </Link>
-              <Link to="/teacher/competitions" className="flex items-center px-4 py-3 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors duration-200">
-                <TrophyIcon className="h-5 w-5 mr-3" />
-                Competitions
-              </Link>
-              <Link to="/teacher/profile" className="flex items-center px-4 py-3 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors duration-200">
-                <UserIcon className="h-5 w-5 mr-3" />
-                Profile
-              </Link>
-              <Link to="/teacher/settings" className="flex items-center px-4 py-3 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors duration-200">
-                <Cog6ToothIcon className="h-5 w-5 mr-3" />
-                Settings
-              </Link>
-            </nav>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Classes</p>
+              <h3 className="text-xl font-semibold text-gray-900">{classes.length}</h3>
+            </div>
           </div>
         </div>
-
-        {/* Main Content */}
-        <div className="flex-1 ml-64">
-          {/* Top Bar */}
-          <div className="bg-white border-b border-gray-200 sticky top-16 z-10">
-            <div className="px-8 py-4 flex items-center justify-between">
-              <h1 className="text-2xl font-semibold text-gray-900">Teacher Dashboard</h1>
-              <div className="flex items-center space-x-4">
-                <button 
-                  onClick={() => setIsCreatingClass(true)}
-                  className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
-                >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  New Class
-                </button>
-                <button 
-                  onClick={() => setIsCreatingCompetition(true)}
-                  className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors duration-200"
-                >
-                  <TrophyIcon className="h-5 w-5 mr-2" />
-                  Create Competition
-                </button>
-              </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 p-3 rounded-lg bg-green-100">
+              <UserGroupIcon className="h-6 w-6 text-green-600" />
             </div>
-
-            {/* Tabs */}
-            <div className="px-8 flex space-x-8 border-b border-gray-200">
-              <button
-                onClick={() => setActiveTab('classes')}
-                className={`py-4 px-2 inline-flex items-center space-x-2 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                  activeTab === 'classes'
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <AcademicCapIcon className="h-5 w-5" />
-                <span>Classes</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('students')}
-                className={`py-4 px-2 inline-flex items-center space-x-2 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                  activeTab === 'students'
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <UserGroupIcon className="h-5 w-5" />
-                <span>Students</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('analytics')}
-                className={`py-4 px-2 inline-flex items-center space-x-2 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                  activeTab === 'analytics'
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <ChartBarIcon className="h-5 w-5" />
-                <span>Analytics</span>
-              </button>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Total Students</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                {classes.reduce((sum, c) => sum + c.students, 0)}
+              </h3>
             </div>
           </div>
-
-          {/* Content Area */}
-          <div className="p-8">
-            {activeTab === 'classes' && (
-              <div className="space-y-6">
-                {/* Empty State */}
-                <div className="text-center py-12">
-                  <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-                    <AcademicCapIcon className="h-12 w-12 text-indigo-600" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No classes created yet</h3>
-                  <p className="text-gray-500 mb-6">Click the "New Class" button to get started.</p>
-                  <button className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200">
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    Create Your First Class
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'students' && (
-              <div className="space-y-6">
-                {/* Student List will go here */}
-                <div className="text-center py-12 text-gray-500">
-                  Create a class first to add students
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'analytics' && (
-              <div className="space-y-6">
-                {/* Analytics content will go here */}
-                <div className="text-center py-12 text-gray-500">
-                  Analytics will be available once you have active classes
-                </div>
-              </div>
-            )}
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 p-3 rounded-lg bg-yellow-100">
+              <ClockIcon className="h-6 w-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Hours Taught</p>
+              <h3 className="text-xl font-semibold text-gray-900">124</h3>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 p-3 rounded-lg bg-blue-100">
+              <CheckCircleIcon className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Avg. Score</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                {Math.round(classes.reduce((sum, c) => sum + c.averageScore, 0) / classes.length)}%
+              </h3>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Classes Section */}
+      <div className="bg-white rounded-xl shadow-sm">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Your Classes</h2>
+            <button
+              onClick={() => setShowNewClassModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              New Class
+            </button>
+          </div>
+        </div>
+
+        <div className="px-6 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {classes.map((classItem) => (
+              <div
+                key={classItem.id}
+                className="bg-white rounded-lg border border-gray-200 hover:border-primary transition-colors p-6"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{classItem.name}</h3>
+                    <p className="text-sm text-gray-500 mt-1">{classItem.subject}</p>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-light text-primary">
+                    {classItem.students} Students
+                  </span>
+                </div>
+                
+                <p className="text-sm text-gray-600 mb-4">{classItem.description}</p>
+                
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 mb-1">Completed Lessons</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {classItem.completedLessons} / {classItem.totalLessons}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 mb-1">Next Class</p>
+                    <p className="text-sm font-medium text-gray-900">{classItem.nextClass}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-sm text-gray-600 mb-1">
+                    <span>Progress</span>
+                    <span>{classItem.progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-primary rounded-full h-full transition-all duration-500 ease-out"
+                      style={{ width: `${classItem.progress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* New Class Modal */}
+      {showNewClassModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Create New Class</h3>
+                <button
+                  onClick={() => setShowNewClassModal(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+            <form onSubmit={handleCreateClass} className="px-6 py-4">
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="className" className="block text-sm font-medium text-gray-700">
+                    Class Name
+                  </label>
+                  <input
+                    type="text"
+                    id="className"
+                    value={newClass.name}
+                    onChange={(e) => setNewClass({ ...newClass, name: e.target.value })}
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
+                    Subject
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    value={newClass.subject}
+                    onChange={(e) => setNewClass({ ...newClass, subject: e.target.value })}
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                    Description
+                  </label>
+                  <textarea
+                    id="description"
+                    value={newClass.description}
+                    onChange={(e) => setNewClass({ ...newClass, description: e.target.value })}
+                    rows={3}
+                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowNewClassModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  Create Class
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </DashboardLayout>
   );
 };
 
-export default TeacherDashboard; 
+export default TeacherDashboard;
