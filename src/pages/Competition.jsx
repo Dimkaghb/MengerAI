@@ -419,7 +419,7 @@ const Competition = () => {
   const renderContent = () => {
     if (isListView) {
       return (
-        <div className="ml-64 flex-1 py-8 px-8 bg-gray-50 min-h-screen">
+        <div className="p-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Competitions</h1>
             <p className="text-gray-600 mt-2">Test your knowledge and compete with other students</p>
@@ -509,7 +509,7 @@ const Competition = () => {
 
     if (gameState === 'waiting') {
       return (
-        <div className="ml-64 flex-1 py-8 px-8 bg-gray-50 min-h-screen">
+        <div className="p-8">
           <button
             onClick={handleBackToList}
             className="mb-8 flex items-center text-indigo-600 hover:text-indigo-800"
@@ -584,7 +584,7 @@ const Competition = () => {
 
     if (gameState === 'playing') {
       return (
-        <div className="ml-64 flex-1 py-8 px-8 bg-gray-50 min-h-screen">
+        <div className="p-8">
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center">
               <div className="flex items-center space-x-4">
@@ -652,7 +652,7 @@ const Competition = () => {
     }
 
     return (
-      <div className="ml-64 flex-1 py-8 px-8 bg-gray-50 min-h-screen">
+      <div className="p-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
             Competition Results
@@ -1027,16 +1027,11 @@ const Competition = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-white h-screen fixed left-0 top-0 shadow-sm">
-        <div className="p-6">
-          <Link to="/" className="flex items-center">
-            <img src={mengerLogo} alt="Menger Logo" className="h-14" />
-          </Link>
-        </div>
-        <nav className="mt-6">
-          <div className="px-4 space-y-2">
+      <div className="w-64 bg-white fixed left-0 top-16 bottom-0 border-r border-gray-200 overflow-y-auto">
+        <nav className="p-6">
+          <div className="space-y-2">
             <Link
               to="/dashboard"
               className="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
@@ -1077,7 +1072,9 @@ const Competition = () => {
       </div>
 
       {/* Main Content */}
-      {renderContent()}
+      <div className="ml-64">
+        {renderContent()}
+      </div>
     </div>
   );
 };
