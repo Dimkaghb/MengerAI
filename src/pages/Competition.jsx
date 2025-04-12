@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
@@ -41,7 +41,7 @@ const competitionsData = [
   },
   {
     id: 'physics',
-    title: 'Physics',
+    title: 'Physics', 
     description: 'Test your knowledge of mechanics, electricity, and thermodynamics',
     participants: 198,
     difficulty: 'Hard',
@@ -65,6 +65,28 @@ const competitionsData = [
     textColor: 'text-teal-600',
     borderColor: 'border-teal-200',
   }
+];
+
+// Mock leaderboard data
+const mockLeaderboard = [
+  { name: 'Alex Johnson', score: 850, rank: 1 },
+  { name: 'Sarah Williams', score: 800, rank: 2 },
+  { name: 'Michael Brown', score: 750, rank: 3 },
+  { name: 'Emily Davis', score: 700, rank: 4 },
+  { name: 'David Wilson', score: 650, rank: 5 },
+];
+
+// Add mock average user data after mockLeaderboard
+const mockAverageUserData = {
+  timePerQuestion: [15, 18, 12, 20, 14, 16, 19],
+  scores: [85, 78, 92, 70, 88, 82, 75]
+};
+
+// Gamification badges
+const badges = [
+  { id: 'speedster', name: 'Speedster', description: 'Answered all questions in record time', icon: '⚡', unlocked: true },
+  { id: 'perfectionist', name: 'Perfectionist', description: 'Got all answers correct', icon: '🎯', unlocked: false },
+  { id: 'streakmaster', name: 'Streak Master', description: 'Maintained a 5-question streak', icon: '🔥', unlocked: true },
 ];
 
 // Computer Science questions
@@ -267,9 +289,16 @@ const Competition = () => {
   const [streak, setStreak] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [answerStats, setAnswerStats] = useState({
+    correct: 0,
+    incorrect: 0,
+    timeouts: 0,
+    averageTime: 0,
+    timePerQuestion: []
+  });
+  const [chartsReady, setChartsReady] = useState(false);
 
   useEffect(() => {
-    // Если есть ID соревнования в URL, переходим к нему
     if (competitionId) {
       const competition = competitionsData.find(c => c.id === competitionId);
       if (competition) {
@@ -295,6 +324,10 @@ const Competition = () => {
     return () => clearInterval(timer);
   }, [timeLeft, gameState]);
 
+  useEffect(() => {
+    setChartsReady(true);
+  }, []);
+
   const handleAnswer = (answerIndex) => {
     if (selectedAnswer !== null) return;
     
@@ -302,12 +335,25 @@ const Competition = () => {
     
     const questions = allQuestions[currentCompetition.id];
     const isCorrect = answerIndex === questions[currentQuestion].correctAnswer;
+    const timeSpent = questions[currentQuestion].timeLimit - timeLeft;
     
     if (isCorrect) {
       setScore(prev => prev + questions[currentQuestion].points);
       setStreak(prev => prev + 1);
+      setAnswerStats(prev => ({
+        ...prev,
+        correct: prev.correct + 1,
+        timePerQuestion: [...prev.timePerQuestion, timeSpent],
+        averageTime: (prev.averageTime * prev.timePerQuestion.length + timeSpent) / (prev.timePerQuestion.length + 1)
+      }));
     } else {
       setStreak(0);
+      setAnswerStats(prev => ({
+        ...prev,
+        incorrect: prev.incorrect + 1,
+        timePerQuestion: [...prev.timePerQuestion, timeSpent],
+        averageTime: (prev.averageTime * prev.timePerQuestion.length + timeSpent) / (prev.timePerQuestion.length + 1)
+      }));
     }
     
     setShowFeedback(true);
@@ -326,6 +372,12 @@ const Competition = () => {
 
   const handleTimeUp = () => {
     setStreak(0);
+    setAnswerStats(prev => ({
+      ...prev,
+      timeouts: prev.timeouts + 1,
+      timePerQuestion: [...prev.timePerQuestion, allQuestions[currentCompetition.id][currentQuestion].timeLimit]
+    }));
+    
     const questions = allQuestions[currentCompetition.id];
     
     if (currentQuestion < questions.length - 1) {
@@ -359,24 +411,20 @@ const Competition = () => {
     navigate('/competition');
   };
 
-  // Фильтрация соревнований по поисковому запросу
   const filteredCompetitions = competitionsData.filter(
     comp => comp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     comp.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Содержимое страницы
   const renderContent = () => {
     if (isListView) {
-  return (
+      return (
         <div className="ml-64 flex-1 py-8 px-8 bg-gray-50 min-h-screen">
-          {/* Шапка */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Competitions</h1>
             <p className="text-gray-600 mt-2">Test your knowledge and compete with other students</p>
           </div>
 
-          {/* Строка поиска */}
           <div className="mb-8 max-w-md">
             <div className="relative">
               <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -390,7 +438,6 @@ const Competition = () => {
             </div>
           </div>
 
-          {/* Карточки соревнований */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCompetitions.map((competition) => (
               <motion.div
@@ -443,28 +490,27 @@ const Competition = () => {
                         <span className="text-gray-500">Not attempted</span>
                       )}
                     </div>
-        </div>
+                  </div>
 
-            <button
+                  <button
                     onClick={() => handleSelectCompetition(competition)}
                     className={`w-full flex items-center justify-center px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r ${competition.color} hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
                   >
                     {competition.attemptedByUser ? 'Try Again' : 'Start Competition'}
                     <ArrowRightIcon className="ml-2 h-4 w-4" />
-            </button>
+                  </button>
                 </div>
               </motion.div>
-          ))}
+            ))}
           </div>
         </div>
       );
     }
 
-    // Отображение экрана перед началом игры
     if (gameState === 'waiting') {
       return (
         <div className="ml-64 flex-1 py-8 px-8 bg-gray-50 min-h-screen">
-            <button
+          <button
             onClick={handleBackToList}
             className="mb-8 flex items-center text-indigo-600 hover:text-indigo-800"
           >
@@ -472,7 +518,7 @@ const Competition = () => {
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
             </svg>
             Back to list
-            </button>
+          </button>
           
           <div className="bg-white rounded-lg shadow-sm p-8">
             <div className="flex items-center justify-between mb-6">
@@ -536,12 +582,10 @@ const Competition = () => {
       );
     }
 
-    // Отображение игрового процесса
     if (gameState === 'playing') {
       return (
         <div className="ml-64 flex-1 py-8 px-8 bg-gray-50 min-h-screen">
           <div className="max-w-4xl mx-auto space-y-8">
-            {/* Статус игры */}
             <div className="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center text-indigo-600">
@@ -554,21 +598,20 @@ const Competition = () => {
                     <span className="text-xl font-bold">{streak}x</span>
                   </div>
                 )}
-                      </div>
+              </div>
               <div className="flex items-center space-x-4">
                 <div className="text-gray-600">
                   <span className="font-medium">{currentQuestion + 1}</span>
                   <span> / {allQuestions[currentCompetition.id].length}</span>
-                      </div>
+                </div>
                 <div className="flex items-center text-red-500">
                   <ClockIcon className="h-6 w-6 mr-2" />
                   <span className="text-xl font-bold">{timeLeft}</span>
-                    </div>
-                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Вопрос */}
-                  <motion.div
+            <motion.div
               key={currentQuestion}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -601,32 +644,22 @@ const Competition = () => {
                     {option}
                   </motion.button>
                 ))}
-                      </div>
+              </div>
             </motion.div>
-                      </div>
-                    </div>
+          </div>
+        </div>
       );
     }
 
-    // Отображение результатов
     return (
       <div className="ml-64 flex-1 py-8 px-8 bg-gray-50 min-h-screen">
-        <button 
-          onClick={handleBackToList}
-          className="mb-8 flex items-center text-indigo-600 hover:text-indigo-800"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-          </svg>
-          Back to list
-        </button>
-        
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-            Competition Completed!
+            Competition Results
           </h1>
+          
           <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-            <div className="text-center mb-6">
+            <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 rounded-full mb-4">
                 <TrophyIcon className="h-10 w-10 text-indigo-600" />
               </div>
@@ -637,20 +670,334 @@ const Competition = () => {
                 Points earned
               </p>
             </div>
-            
+
+            <div className="mb-8">
+              <div className="flex justify-between mb-2">
+                <span className="text-sm text-gray-600">Your Score</span>
+                <span className="text-sm text-gray-600">{score}/{allQuestions[currentCompetition.id].reduce((sum, q) => sum + q.points, 0)}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div 
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 h-4 rounded-full transition-all duration-500 ease-out"
+                  style={{ 
+                    width: `${(score / allQuestions[currentCompetition.id].reduce((sum, q) => sum + q.points, 0)) * 100}%` 
+                  }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Statistical Information */}
+            <div className="border-t border-gray-200 pt-6 mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Statistics</h3>
+              
+              {/* Simple Statistics Display */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-600">Correct Answers</div>
+                  <div className="text-xl font-bold text-green-500">{answerStats.correct}</div>
+                  <div className="text-xs text-gray-500">out of {allQuestions[currentCompetition.id].length}</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-600">Incorrect Answers</div>
+                  <div className="text-xl font-bold text-red-500">{answerStats.incorrect}</div>
+                  <div className="text-xs text-gray-500">mistakes made</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-600">Time Outs</div>
+                  <div className="text-xl font-bold text-gray-500">{answerStats.timeouts}</div>
+                  <div className="text-xs text-gray-500">questions skipped</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-600">Avg. Time</div>
+                  <div className="text-xl font-bold text-indigo-500">{answerStats.averageTime.toFixed(1)}s</div>
+                  <div className="text-xs text-gray-500">per question</div>
+                </div>
+              </div>
+
+              {/* Visual Progress Bars */}
+              <div className="space-y-6 mb-8">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-600">Accuracy</span>
+                    <span className="text-sm font-medium text-gray-600">
+                      {((answerStats.correct / (answerStats.correct + answerStats.incorrect + answerStats.timeouts)) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div 
+                      className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                      style={{ width: `${(answerStats.correct / allQuestions[currentCompetition.id].length) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-600">Time Performance</span>
+                    <span className="text-sm font-medium text-gray-600">
+                      {Math.min(100, ((30 - answerStats.averageTime) / 30 * 100)).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div 
+                      className="bg-indigo-500 h-2.5 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(100, ((30 - answerStats.averageTime) / 30 * 100))}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-600">Completion</span>
+                    <span className="text-sm font-medium text-gray-600">
+                      {((answerStats.correct + answerStats.incorrect + answerStats.timeouts) / allQuestions[currentCompetition.id].length * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div 
+                      className="bg-purple-500 h-2.5 rounded-full transition-all duration-500"
+                      style={{ width: `${(answerStats.correct + answerStats.incorrect + answerStats.timeouts) / allQuestions[currentCompetition.id].length * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time Distribution */}
+              <div className="bg-white rounded-lg p-6 shadow-sm mb-8">
+                <h4 className="text-sm font-medium text-gray-600 mb-4">Performance Overview</h4>
+                
+                {/* Legend */}
+                <div className="flex items-center justify-center space-x-6 mb-4">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full mr-2"></div>
+                    <span className="text-xs text-gray-600">You</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-purple-300 rounded-full mr-2"></div>
+                    <span className="text-xs text-gray-600">Average</span>
+                  </div>
+                </div>
+
+                {/* Graphs Container */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Time Performance Graph */}
+                  <div>
+                    <h5 className="text-xs font-medium text-gray-500 mb-2 text-center">Time per Question</h5>
+                    <div className="relative h-40 bg-gray-50 rounded-lg p-2">
+                      {/* Grid lines */}
+                      <div className="absolute inset-0 grid grid-cols-1 grid-rows-3">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="border-t border-gray-100">
+                            <span className="absolute -left-1 -top-3 text-[10px] text-gray-400">
+                              {30 - i * 10}s
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Graph */}
+                      <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        {/* Your performance line */}
+                        <path
+                          d={`M ${answerStats.timePerQuestion.map((time, i) => 
+                            `${i * (100 / (answerStats.timePerQuestion.length - 1))},${100 - (time / 30 * 100)}`
+                          ).join(' L ')}`}
+                          fill="none"
+                          stroke="#818CF8"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          className="transition-all duration-500"
+                        />
+
+                        {/* Average users line */}
+                        <path
+                          d={`M ${mockAverageUserData.timePerQuestion.map((time, i) => 
+                            `${i * (100 / (mockAverageUserData.timePerQuestion.length - 1))},${100 - (time / 30 * 100)}`
+                          ).join(' L ')}`}
+                          fill="none"
+                          stroke="#E9D5FF"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeDasharray="3,3"
+                          className="transition-all duration-500"
+                        />
+
+                        {/* Data points */}
+                        {answerStats.timePerQuestion.map((time, i) => (
+                          <circle
+                            key={i}
+                            cx={i * (100 / (answerStats.timePerQuestion.length - 1))}
+                            cy={100 - (time / 30 * 100)}
+                            r="2"
+                            fill="#818CF8"
+                            className="transition-all duration-500"
+                          />
+                        ))}
+                      </svg>
+
+                      {/* X-axis labels */}
+                      <div className="flex justify-between mt-1">
+                        {answerStats.timePerQuestion.map((_, i) => (
+                          <div key={i} className="text-[10px] text-gray-400">Q{i + 1}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Score Performance Graph */}
+                  <div>
+                    <h5 className="text-xs font-medium text-gray-500 mb-2 text-center">Score per Question</h5>
+                    <div className="relative h-40 bg-gray-50 rounded-lg p-2">
+                      {/* Grid lines */}
+                      <div className="absolute inset-0 grid grid-cols-1 grid-rows-3">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="border-t border-gray-100">
+                            <span className="absolute -left-1 -top-3 text-[10px] text-gray-400">
+                              {150 - i * 50}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Graph */}
+                      <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        {/* Your score line */}
+                        <path
+                          d={`M ${allQuestions[currentCompetition.id].map((q, i) => 
+                            `${i * (100 / (allQuestions[currentCompetition.id].length - 1))},${100 - (q.points / 150 * 100)}`
+                          ).join(' L ')}`}
+                          fill="none"
+                          stroke="#818CF8"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          className="transition-all duration-500"
+                        />
+
+                        {/* Average users line */}
+                        <path
+                          d={`M ${mockAverageUserData.scores.map((score, i) => 
+                            `${i * (100 / (mockAverageUserData.scores.length - 1))},${100 - (score / 150 * 100)}`
+                          ).join(' L ')}`}
+                          fill="none"
+                          stroke="#E9D5FF"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeDasharray="3,3"
+                          className="transition-all duration-500"
+                        />
+
+                        {/* Data points */}
+                        {allQuestions[currentCompetition.id].map((q, i) => (
+                          <circle
+                            key={i}
+                            cx={i * (100 / (allQuestions[currentCompetition.id].length - 1))}
+                            cy={100 - (q.points / 150 * 100)}
+                            r="2"
+                            fill="#818CF8"
+                            className="transition-all duration-500"
+                          />
+                        ))}
+                      </svg>
+
+                      {/* X-axis labels */}
+                      <div className="flex justify-between mt-1">
+                        {allQuestions[currentCompetition.id].map((_, i) => (
+                          <div key={i} className="text-[10px] text-gray-400">Q{i + 1}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-600">Accuracy</div>
+                  <div className="text-xl font-bold text-gray-900">
+                    {((answerStats.correct / (answerStats.correct + answerStats.incorrect + answerStats.timeouts)) * 100).toFixed(1)}%
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-600">Avg. Time</div>
+                  <div className="text-xl font-bold text-gray-900">
+                    {answerStats.averageTime.toFixed(1)}s
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-600">Best Streak</div>
+                  <div className="text-xl font-bold text-gray-900">{streak}</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-sm text-gray-600">Points/Question</div>
+                  <div className="text-xl font-bold text-gray-900">
+                    {(score / allQuestions[currentCompetition.id].length).toFixed(0)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="border-t border-gray-200 pt-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-left text-sm md:text-base">
                   <p className="text-gray-500">Correct answers:</p>
                   <p className="text-gray-500">Maximum points:</p>
                   <p className="text-gray-500">Your result:</p>
-                      </div>
+                </div>
                 <div className="text-right">
                   <p className="font-medium text-gray-900">{Math.floor(score / 100)}/{allQuestions[currentCompetition.id].length}</p>
                   <p className="font-medium text-gray-900">{allQuestions[currentCompetition.id].reduce((sum, q) => sum + q.points, 0)}</p>
                   <p className="font-medium text-gray-900">{Math.floor((score / allQuestions[currentCompetition.id].reduce((sum, q) => sum + q.points, 0)) * 100)}%</p>
-                      </div>
-                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Gamification Badges */}
+          <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Achievements</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {badges.map((badge) => (
+                <div 
+                  key={badge.id}
+                  className={`p-4 rounded-lg border-2 ${
+                    badge.unlocked 
+                      ? 'border-indigo-500 bg-indigo-50' 
+                      : 'border-gray-200 bg-gray-50 opacity-50'
+                  }`}
+                >
+                  <div className="text-4xl mb-2">{badge.icon}</div>
+                  <h3 className="font-semibold text-gray-900">{badge.name}</h3>
+                  <p className="text-sm text-gray-600">{badge.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Rating Section */}
+          <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Rating</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {mockLeaderboard.map((participant) => (
+                    <tr key={participant.rank} className={participant.rank <= 3 ? 'bg-indigo-50' : ''}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {participant.rank === 1 ? '🥇' : participant.rank === 2 ? '🥈' : participant.rank === 3 ? '🥉' : participant.rank}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{participant.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{participant.score}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
           
@@ -681,7 +1028,7 @@ const Competition = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* Боковая панель */}
+      {/* Sidebar */}
       <div className="w-64 bg-white h-screen fixed left-0 top-0 shadow-sm">
         <div className="p-6">
           <Link to="/" className="flex items-center">
@@ -729,7 +1076,7 @@ const Competition = () => {
         </nav>
       </div>
 
-      {/* Основное содержимое */}
+      {/* Main Content */}
       {renderContent()}
     </div>
   );
